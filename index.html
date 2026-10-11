@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sasviru Phone AI - Instant Mobile Diagnostics</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-xl text-white shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid fa-robot text-xl"></i>
+                </div>
+                <span class="text-xl font-bold tracking-wide bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Sasviru Phone AI</span>
+            </div>
+            <span class="text-xs bg-blue-500/10 text-blue-400 px-3 py-1 rounded-full border border-blue-500/20">AI Powered</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-2xl mx-auto px-4 py-8">
+        
+        <!-- Intro Banner -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold mb-2 text-white">Sasviru Phone AI වෙත සාදරයෙන් පිළිගනිමු!</h1>
+            <p class="text-slate-400 text-sm">ඔබේ Phone එකේ ප්‍රශ්නයක් තියෙනවද? ෆොටෝ එකක් දාලා, විස්තරේ ලිව්වොත් **Sasviru AI** එකෙන් ඒකට විසඳුම හොයලා දෙන්නම්!</p>
+        </div>
+
+        <!-- Submission Form Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+            <form id="diagnoseForm" onsubmit="handleDiagnose(event)" class="space-y-6">
+                
+                <!-- Phone Model -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Phone Model එක (උදා: Samsung A12, iPhone 11)</label>
+                    <input type="text" id="phoneModel" required placeholder="ඔබේ Phone මාදිලිය මෙහි ලියන්න..." 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 transition">
+                </div>
+
+                <!-- Photo Upload Area -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">ප්‍රශ්නය ඇති තැන Photo එකක් Upload කරන්න</label>
+                    <div class="border-2 border-dashed border-slate-800 rounded-xl p-6 text-center hover:border-slate-700 transition cursor-pointer relative bg-slate-950/50" onclick="document.getElementById('imageInput').click()">
+                        <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+                        <div id="uploadPrompt" class="space-y-2">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-blue-500"></i>
+                            <p class="text-sm text-slate-400">Click කරලා Photo එකක් තෝරන්න හෝ මෙතනට Drag කරලා දාන්න</p>
+                            <p class="text-xs text-slate-600">PNG, JPG up to 10MB</p>
+                        </div>
+                        <div id="imagePreviewContainer" class="hidden relative">
+                            <img id="imagePreview" class="max-h-48 mx-auto rounded-lg object-contain">
+                            <button type="button" onclick="removeImage(event)" class="absolute top-2 right-2 bg-red-600 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-red-700 shadow">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issue Description -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">ප්‍රශ්නය පිළිබඳ විස්තරයක් (Problem Description)</label>
+                    <textarea id="issueDesc" rows="3" required placeholder="උදා: ඩිස්ප්ලේ එක පැලෙලා, ටච් වෙන්නේ නැහැ..." 
+                        class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 transition resize-none"></textarea>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-blue-600/25 flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Sasviru AI මඟින් විසඳුම සොයන්න</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Loading Spinner (Hidden by default) -->
+        <div id="loadingIndicator" class="hidden text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mb-4"></div>
+            <p class="text-slate-400 text-sm">Sasviru AI පද්ධතිය මඟින් ෆෝන් එක පරීක්ෂා කරමින් පවතී...</p>
+        </div>
+
+        <!-- Result Section (Hidden by default) -->
+        <div id="resultCard" class="hidden mt-6 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+                    <h2 class="text-lg font-bold text-white">Sasviru AI විශ්ලේෂණ වාර්තාව</h2>
+                </div>
+                <span id="resModel" class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full"></span>
+            </div>
+
+            <div>
+                <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">सम्भाव्य හේතුව (Possible Cause)</h3>
+                <p id="resCause" class="text-slate-200 text-sm bg-slate-950 p-3.5 rounded-xl border border-slate-800/60"></p>
+            </div>
+
+            <div>
+                <h3 class="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-1">කළ යුතු විසඳුම් (Recommended Fixes)</h3>
+                <ul id="resSolutions" class="space-y-2 text-sm text-slate-300"></ul>
+            </div>
+
+            <button onclick="resetForm()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-3 rounded-xl transition text-sm">
+                තවත් ප්‍රශ්නයක් ඇහීමට (Reset)
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 text-xs text-slate-600 border-t border-slate-900 mt-12">
+        &copy; 2026 Sasviru Phone AI. All Rights Reserved.
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let uploadedImageSrc = null;
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageSrc = e.target.result;
+                    document.getElementById('imagePreview').src = uploadedImageSrc;
+                    document.getElementById('uploadPrompt').classList.add('hidden');
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImage(event) {
+            event.stopPropagation();
+            document.getElementById('imageInput').value = '';
+            uploadedImageSrc = null;
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+            document.getElementById('uploadPrompt').classList.remove('hidden');
+        }
+
+        function handleDiagnose(event) {
+            event.preventDefault();
+            const model = document.getElementById('phoneModel').value;
+            const desc = document.getElementById('issueDesc').value;
+
+            // Hide form, show loading
+            document.getElementById('diagnoseForm').parentElement.classList.add('hidden');
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+
+            // Simulate AI analysis delay
+            setTimeout(() => {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                
+                // Populate results
+                document.getElementById('resModel').textContent = model;
+                document.getElementById('resCause').textContent = `ගැටළුව: "${desc}". Sasviru AI විශ්ලේෂණයට අනුව මෙය දෘඩාංග (Hardware) හෝ මෘදුකාංග (Software) දෝෂයක් විය හැක.`;
+                
+                const solutionsList = document.getElementById('resSolutions');
+                solutionsList.innerHTML = `
+                    <li class="bg-slate-950 p-3 rounded-xl border border-slate-800/60 flex items-start space-x-2">
+                        <i class="fa-solid fa-circle-arrow-right text-blue-500 mt-1"></i>
+                        <span>ෆෝන් එක Restart කර නැවත පරීක්ෂා කර බලන්න.</span>
+                    </li>
+                    <li class="bg-slate-950 p-3 rounded-xl border border-slate-800/60 flex items-start space-x-2">
+                        <i class="fa-solid fa-circle-arrow-right text-blue-500 mt-1"></i>
+                        <span>භෞතික හානියක් (Physical Damage) නම් විශ්වාසවන්ත සේවා මධ්‍යස්ථානයකට (Service Center) පෙන්වන්න.</span>
+                    </li>
+                    <li class="bg-slate-950 p-3 rounded-xl border border-slate-800/60 flex items-start space-x-2">
+                        <i class="fa-solid fa-circle-arrow-right text-blue-500 mt-1"></i>
+                        <span>මෘදුකාංග දෝෂයක් නම් System Update එකක් හෝ Factory Reset එකක් අවශ්‍ය විය හැක.</span>
+                    </li>
+                `;
+
+                document.getElementById('resultCard').classList.remove('hidden');
+            }, 1800);
+        }
+
+        function resetForm() {
+            document.getElementById('diagnoseForm').reset();
+            removeImage({stopPropagation: () => {}});
+            document.getElementById('resultCard').classList.add('hidden');
+            document.getElementById('diagnoseForm').parentElement.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
